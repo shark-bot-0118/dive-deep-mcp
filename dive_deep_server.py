@@ -215,26 +215,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description='A Deep Thinking Assistant - MCP server for enhanced reasoning and analysis'
     )
-    parser.add_argument('--sse', action='store_true', help='Use SSE transport')
-    parser.add_argument('--port', type=int, default=8889, help='Port to run the server on')
-    args = parser.parse_args()
 
     logger.info("Starting Dive Deep MCP server")
-    logger.debug(f"Arguments: SSE={args.sse}, Port={args.port}")
 
     # Set up logging
     logger.remove()
     logger.add(sys.stderr, level='DEBUG')
 
-    # Run server with appropriate transport
+    # Run server with default transport (stdio)
     try:
-        if args.sse:
-            logger.info(f"Running server with SSE transport on port {args.port}")
-            mcp.settings.port = args.port
-            mcp.run(transport='sse')
-        else:
-            logger.info("Running server with default transport")
-            mcp.run()
+        logger.info("Running server with stdio transport")
+        mcp.run()
     except Exception as e:
         logger.critical(f"Failed to start server: {str(e)}", exc_info=True)
         sys.exit(1)
