@@ -38,7 +38,4 @@ logs/
 *.swo
 
 # Mac
-.DS_Store
-
-# Tool execution results
-tool_execution_result/ 
+.DS_Store 
