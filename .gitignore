@@ -38,4 +38,7 @@ logs/
 *.swo
 
 # Mac
-.DS_Store 
+.DS_Store
+
+# bk
+bk/ 

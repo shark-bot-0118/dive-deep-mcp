@@ -1,11 +1,11 @@
-import argparse
 import dotenv
 import json
 import os
 import sys
 from mcp.server.fastmcp import FastMCP
 from typing import List, TypedDict
-from openai import OpenAI
+import google.genai as genai
+from google.genai.types import GenerateContentConfig
 from logger_config import get_logger
 from prompts import (
     DEEP_THINKING_AGENT_DESCRIPTION,
@@ -34,17 +34,18 @@ logger = get_logger("dive_deep_server")
 
 dotenv.load_dotenv()
 
-# OpenAI clientの初期化
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-)
+# Gemini clientの初期化
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+# デフォルトのモデルを環境変数から読み込む
+DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 
 logger.info("Initializing MCP server...")
 mcp = FastMCP(
     'Deep Thinking Assistant - MCP server for enhanced reasoning and analysis',
     dependencies=[
         'loguru',
-        'openai',
+        'google-genai',
     ],
 )
 
@@ -54,15 +55,13 @@ mcp = FastMCP(
 def deep_thinking_agent(
     instructions: str,
     context: str,
-    model: str = "o3-mini",
-    reasoning_effort: str = "medium" 
+    model: str = DEFAULT_MODEL
 ) -> McpResponse:
     """deep_thinking_agentを実行し、着眼点を提示し思考範囲を拡大します。
 
     Args:
         context: 思考プロセスのコンテキスト
-        model: 使用するモデル名（デフォルト: "o3-mini"）
-        reasoning_effort: medium 
+        model: 使用するモデル名（デフォルト: "gemini-2.0-flash"）
     """
     logger.info(f"Starting deep_thinking_agent with model: {model}")
     logger.debug(f"Instructions: {instructions}")
@@ -70,19 +69,15 @@ def deep_thinking_agent(
     
     try:
         # システムプロンプトの設定
-        final_messages = []
-        final_messages.append({"role": "system", "content": DEEP_THINKING_PROMPT})
-        prompt = {
-            "role": "user",
-            "content": f"instructions from user: {instructions}\nthinking process: {context}"
-        }
-        final_messages.append(prompt)
+        content = f"instructions from user: {instructions}\nthinking process: {context}"
 
-        logger.debug("Sending request to OpenAI API")
-        response = client.chat.completions.create(
+        logger.debug("Sending request to Gemini API")
+        response = client.models.generate_content(
             model=model,
-            messages=final_messages,
-            reasoning_effort=reasoning_effort
+            contents=content,
+            config=GenerateContentConfig(
+                system_instruction=DEEP_THINKING_PROMPT,
+            ),
         )
         
         logger.info("Successfully received response from deep_thinking_agent")
@@ -90,14 +85,14 @@ def deep_thinking_agent(
             'content': [
                 {
                     'type': 'text',
-                    'text': response.choices[0].message.content,
+                    'text': response.text,
                 }
             ]
         }
     except Exception as e:
         logger.error(f'Error in deep_thinking_agent: {str(e)}', exc_info=True)
         return {
-            'content': [{'type': 'text', 'text': f'Error in chat completion: {e}'}],
+            'content': [{'type': 'text', 'text': f'Error in content generation: {e}'}],
             'isError': True,
         }
 
@@ -107,7 +102,7 @@ def deep_thinking_agent(
 def enhancement_agent(
     instructions: str,
     code: list[str],
-    model: str = "gpt-4",
+    model: str = DEFAULT_MODEL,
     temperature: float = 0.7
 ) -> McpResponse:
     """enhancement_agentを実行し、深い思考と分析を提供します。
@@ -115,28 +110,25 @@ def enhancement_agent(
     Args:
         instructions: レビュー対象のコードに対する指示
         code: コードのリスト
-        model: 使用するモデル名（デフォルト: "gpt-4"）
+        model: 使用するモデル名（デフォルト: "gemini-2.0-flash"）
         temperature: 生成時の温度パラメータ（デフォルト: 0.7）
-        """
+    """
     logger.info(f"Starting enhancement_agent with model: {model}")
     logger.debug(f"Instructions: {instructions}")
     logger.debug(f"Number of code files: {len(code)}")
     
     try:
-        # システムプロンプトの設定
-        final_messages = []
-        final_messages.append({"role": "system", "content": ADVANCED_ANALYSIS_PROMPT})
-        prompt = {
-            "role": "user",
-            "content": f"instructions: {instructions}\ncode: {json.dumps(code, ensure_ascii=False)}"
-        }
-        final_messages.append(prompt)
+        # コンテンツの準備
+        content = f"instructions: {instructions}\ncode: {json.dumps(code, ensure_ascii=False)}"
 
-        logger.debug("Sending request to OpenAI API")
-        response = client.chat.completions.create(
+        logger.debug("Sending request to Gemini API")
+        response = client.models.generate_content(
             model=model,
-            messages=final_messages,
-            temperature=temperature,
+            contents=content,
+            config=GenerateContentConfig(
+                system_instruction=ADVANCED_ANALYSIS_PROMPT,
+                temperature=temperature,
+            ),
         )
         
         logger.info("Successfully received response from enhancement_agent")
@@ -144,14 +136,14 @@ def enhancement_agent(
             'content': [
                 {
                     'type': 'text',
-                    'text': response.choices[0].message.content,
+                    'text': response.text,
                 }
             ]
         }
     except Exception as e:
         logger.error(f'Error in enhancement_agent: {str(e)}', exc_info=True)
         return {
-            'content': [{'type': 'text', 'text': f'Error in chat completion: {e}'}],
+            'content': [{'type': 'text', 'text': f'Error in content generation: {e}'}],
             'isError': True,
         }
 
@@ -161,7 +153,7 @@ def enhancement_agent(
 def final_review_agent(
     instructions: str,
     code: list[str],
-    model: str = "gpt-4",
+    model: str = DEFAULT_MODEL,
     temperature: float = 0.7
 ) -> McpResponse:
     """提案された回答や解決策を批判的に分析し、改善点を提示します。
@@ -169,7 +161,7 @@ def final_review_agent(
     Args:
         instructions: レビュー対象のコードに対する指示
         code: コードのリスト
-        model: 使用するモデル名（デフォルト: "gpt-4"）
+        model: 使用するモデル名（デフォルト: "gemini-2.0-flash"）
         temperature: 生成時の温度パラメータ（デフォルト: 0.7）
     """
     logger.info(f"Starting final_review_agent with model: {model}")
@@ -177,20 +169,17 @@ def final_review_agent(
     logger.debug(f"Number of code files: {len(code)}")
     
     try:
-        # 分析用のプロンプトを構築
-        final_messages = []
-        final_messages.append({"role": "system", "content": DEEP_REVIEW_PROMPT})
-        prompt = {
-            "role": "user",
-            "content": f"instructions: {instructions}\ncode: {json.dumps(code, ensure_ascii=False)}"
-        }
-        final_messages.append(prompt)
+        # コンテンツの準備
+        content = f"instructions: {instructions}\ncode: {json.dumps(code, ensure_ascii=False)}"
 
-        logger.debug("Sending request to OpenAI API")
-        response = client.chat.completions.create(
+        logger.debug("Sending request to Gemini API")
+        response = client.models.generate_content(
             model=model,
-            messages=final_messages,
-            temperature=temperature,
+            contents=content,
+            config=GenerateContentConfig(
+                system_instruction=DEEP_REVIEW_PROMPT,
+                temperature=temperature,
+            ),
         )
         
         logger.info("Successfully received response from final_review_agent")
@@ -198,29 +187,22 @@ def final_review_agent(
             'content': [
                 {
                     'type': 'text',
-                    'text': response.choices[0].message.content,
+                    'text': response.text,
                 }
             ]
         }
     except Exception as e:
         logger.error(f'Error in final_review_agent: {str(e)}', exc_info=True)
         return {
-            'content': [{'type': 'text', 'text': f'Error in response analysis: {e}'}],
+            'content': [{'type': 'text', 'text': f'Error in content generation: {e}'}],
             'isError': True,
         }
 
 
 def main() -> None:
     """Run Dive Deep MCP server."""
-    parser = argparse.ArgumentParser(
-        description='A Deep Thinking Assistant - MCP server for enhanced reasoning and analysis'
-    )
 
     logger.info("Starting Dive Deep MCP server")
-
-    # Set up logging
-    logger.remove()
-    logger.add(sys.stderr, level='DEBUG')
 
     # Run server with default transport (stdio)
     try:

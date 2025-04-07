@@ -7,52 +7,62 @@
 # deep_thinking_agent用の説明文
 DEEP_THINKING_AGENT_DESCRIPTION = """
 This tool is designed to be called from AI editors like Cursor before starting to work on a given task. 
-Its purpose is to structure and organize the current thought process by breaking down the problem-solving steps.
+Its purpose is to help structure and organize the thought process by breaking down the problem-solving steps and receiving feedback on the proposed approach.
 
 IMPORTANT USAGE REQUIREMENTS:
 1. You are the AI Editor. Invoke this tool BEFORE attempting to solve the problem.
-2. Your role is to review and enhance the problem-solving process, NOT to generate solutions directly.
-3. First, create a structured thought process to address the problem.
-4. Submit this structured process to the tool to assess whether the approach is well-organized and effective.
+2. DO NOT ask for answers or solutions from this tool. Instead, use it to evaluate the structure and logic of your proposed approach.
+3. This tool is not intended to solve the problem for you, but to review and enhance your thought process. Use it to identify potential improvements in your problem-solving strategy.
+4. First, create a structured thought process that outlines how you plan to approach and solve the problem. Break down the problem into clear, manageable steps.
+5. Submit this structured thought process to the tool to receive feedback on its clarity, coherence, and effectiveness.
+6. DO NOT include the actual code or implementation details when submitting your thought process. Only submit the structured plan or logical approach.
+7. After receiving feedback, update your current thought process to reflect the improvements suggested. Once your thought process is refined, use it as the basis to start working on the task and implementing your solution.
 
 Submission Format:
 - The tool expects input in the following format:
   - instructions: str (User-provided guidelines or requirements related to the task.)
-  - context: str (A structured thought process created by you, the AI Editor, to solve the given problem.)
+  - context: str (A structured thought process created by you, the AI Editor, to outline how you will address the given problem.)
 
 Guidelines for Using This Tool:
 
 1. When to Use:
-- Use this tool before starting any task to ensure that the problem-solving process is logically structured.
+- Use this tool before starting any task to ensure that your problem-solving process is logically structured.
 - Begin by analyzing the problem and outlining a clear process or plan.
-- Use the tool to validate the clarity, coherence, and effectiveness of the proposed approach.
+- Use the tool to receive feedback on the clarity, coherence, and effectiveness of your proposed thought process.
 
 2. How to Submit:
 - Provide the complete set of instructions received from the user.
 - Clearly outline the thought process you developed as a single structured string.
 - Make sure the thought process addresses the problem step-by-step, following the given instructions.
+- Remember, do NOT ask this tool to generate solutions or provide direct answers.
 
 3. Review Focus:
 - The tool will evaluate the logical flow and completeness of your thought process.
-- It will identify potential gaps or areas that need refinement.
-- The goal is to enhance your structured thinking before diving into the actual implementation.
+- It will identify potential gaps, weaknesses, or areas that need improvement.
+- The goal is to enhance your structured thinking before you proceed to the actual implementation.
+- The tool does NOT provide direct solutions or problem resolution.
 
 4. Key Considerations:
 - Clearly outline the problem statement.
 - Break down the problem into smaller, manageable steps.
 - Consider potential challenges and how to address them within your thought process.
-- Prioritize clarity and logical progression.
+- Prioritize clarity and logical progression in your proposed approach.
 
 5. Next Steps After Review:
-- Incorporate the feedback received from the tool.
-- Adjust your thought process to resolve any identified issues.
-- Once the thought process is refined, proceed with the task implementation.
+- Carefully review the feedback provided by the tool.
+- Adjust your thought process to address any identified issues or gaps.
+- Once your thought process is refined and validated, use the revised thought process to start working on the task.
+- You MUST apply the improved thought process to guide your task implementation.
+- Proceed with the task based on the structured plan without deviating from the improved process.
 
 Remember:
-- This tool is intended to improve your structured thinking before starting to code or create solutions.
-- Always formulate your own thought process first before submitting it for review.
+- This tool is intended to improve your structured thinking before you start coding or creating solutions.
+- Always develop your own thought process first before submitting it for review.
+- The primary goal is to receive feedback on your thought process, NOT to obtain a direct solution.
 - Follow the input format strictly: instructions (str), context (str).
+- After refining your thought process, you MUST use it as the basis for your task implementation.
 """
+
 
 # enhancement_agent用の説明文
 ENHANCEMENT_AGENT_DESCRIPTION = """
@@ -75,7 +85,7 @@ STRICT REQUIREMENT:
 - Each file should be processed in a separate call, even if they are part of the same project.
 - For example, if you modified HTML, CSS, and JavaScript files, you MUST call this tool three separate times, once per file.
 
-Guidelines for Using This Tool from AI Editors (like Cursor):
+Guidelines for Using This Tool:
 
 1. Code Submission Format:
 - DO NOT use markdown code blocks or HTML formatting.
@@ -86,9 +96,8 @@ Guidelines for Using This Tool from AI Editors (like Cursor):
 2. File-by-File Review Process:
 - ALWAYS submit each modified/created file separately for review.
 - Review one file at a time for focused analysis.
-- Wait for feedback before proceeding to the next file.
 - Never submit multiple files (such as HTML, CSS, JavaScript) together in one call.
-- AI editors MUST enforce calling this tool individually for each file, regardless of the project structure.
+- You MUST enforce calling this tool individually for each file, regardless of the project structure.
 
 3. Code Content Requirements:
 - Submit the ENTIRE file content, not just modified portions.
@@ -121,7 +130,9 @@ Guidelines for Using This Tool from AI Editors (like Cursor):
 - Adhere strictly to any specified guidelines or constraints.
 
 7. Next Steps After Review:
-- If changes are suggested, make the necessary modifications in your AI editor (like Cursor).
+- If changes are suggested, make the necessary modifications in your code.
+- After making changes, verify that the issues identified in the review have been properly addressed.
+- Update your code according to the suggestions provided in the review.
 - Always perform manual verification to ensure that all final recommendations have been addressed.
 - Do not call this tool again for the same review cycle to prevent unnecessary repetitions.
 
@@ -135,9 +146,10 @@ Remember:
 """
 
 
+
 # final_review_agent用の説明文
 FINAL_REVIEW_AGENT_DESCRIPTION = """
-This tool is designed to be used from AI editors like Cursor for performing the final comprehensive review of code after modifications based on enhancement_agent's feedback.
+This tool is designed to be called from AI editors like Cursor, or similar AI assistants, to perform the final comprehensive review of code after modifications based on enhancement_agent's feedback.
 
 IMPORTANT PRE-EXECUTION REQUIREMENTS:
 1. You MUST create your own comprehensive answer/solution BEFORE using this tool.
@@ -145,7 +157,7 @@ IMPORTANT PRE-EXECUTION REQUIREMENTS:
 3. NEVER ask questions to this tool. Always submit your modified code first and request a final review afterward.
 4. ALWAYS submit the entire modified code, not just parts or snippets.
 5. ALWAYS provide the full contents of the files you want to review (file-by-file) without omitting any sections.
-6. Invoke this tool ONLY once per file as the final comprehensive review after completing all iterations with enhancement_agent. 
+6. Invoke this tool ONLY once per file as the final comprehensive review after completing all iterations with enhancement_agent.
    - DO NOT call this tool again for the same file after the final review to avoid infinite review loops.
 7. You MUST call this tool separately for each file that was modified or created.
    - If you have made changes to multiple files (e.g., HTML, CSS, JavaScript), you MUST call this tool separately for each file.
@@ -160,9 +172,10 @@ Submission Format:
 - Do NOT combine multiple file contents in a single submission. Always call the tool separately for each file.
 - Do NOT provide partial or summarized content. The tool requires the full code for accurate final review.
 
-Guidelines for Using This Tool in AI Editors (like Cursor):
+Guidelines for Using This Tool:
 
 1. When to Use:
+- You are an AI editor (or assistant) responsible for finalizing the code after modifications.
 - Use this tool only after you have completed all review iterations using enhancement_agent.
 - Ensure that you have incorporated all previous feedback and made necessary changes.
 - This tool serves as the final quality check before completion.
@@ -191,24 +204,26 @@ Guidelines for Using This Tool in AI Editors (like Cursor):
 
 5. Next Steps After Final Review:
 - Incorporate the feedback provided by the tool and make necessary modifications to the code.
+- You MUST update the code based on the review to address all identified issues and suggestions.
 - Once the modifications are complete, generate the final version of the script.
-- Present the final script as a solution to the user.
 - Clearly explain the changes made and why they were necessary.
+- Present the final script as a solution to the user.
 
 6. Next Actions:
 - After the final review, do NOT call this tool again for the same file.
 - Once the final version is prepared, perform a final manual verification.
 - Ensure the script meets the initial requirements and is ready for delivery.
+- Make sure to clearly document the changes and the reasons behind them.
 
 Remember:
 - This tool is the last quality gate before completion.
+- You are responsible for ensuring the quality and correctness of the final output.
 - Use this tool only after integrating feedback from enhancement_agent.
 - Always submit the complete code for a comprehensive final review.
 - NEVER combine multiple files in one call; call separately for each file.
 - Follow the input format strictly: instructions (str), codes (list[str]).
 - After receiving the final review feedback, revise the script and present the final version to the user.
 """
-
 
 
 DEEP_THINKING_PROMPT = """
