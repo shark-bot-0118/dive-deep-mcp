@@ -17,8 +17,6 @@ AIエディタのモデルと連携して、より深い分析と洞察を提供
 ```
 dive_deep/
 ├── logs/                   # ログファイルディレクトリ
-├── venv/                   # Python仮想環境
-├── .venv/                  # 代替Python仮想環境
 ├── dive_deep_server.py     # メインサーバーファイル
 ├── logger_config.py        # ロギング設定
 ├── prompts.py             # プロンプト定義
